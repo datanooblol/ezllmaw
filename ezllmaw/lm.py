@@ -39,12 +39,14 @@ class OllamaLLM(BaseModel):
         if self.type=="embeddings":
             # request can be a string or list of string.
             payload.update({"input": request})
+        
         if self.type=="gen":
             url = f"{self.base_url}/api/generate"
         elif self.type=="embeddings":
             url = f"{self.base_url}/api/embed"
         else:
             raise ValueError("Other type of models are not implmented yet.")
+        
         response = requests.post(url=url, headers=headers, json=payload)
         response = response.json()
         

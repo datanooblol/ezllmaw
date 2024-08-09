@@ -1,14 +1,3 @@
-# from langchain_community.llms import Ollama
-# from langchain_ollama import ChatOllama
-# from langchain_community.embeddings import OllamaEmbeddings
-
-# base_url = "http://localhost:11434"
-# model = "llama3"
-
-# llm = Ollama(base_url=base_url, model=model, temperature=0)
-# chatllm = ChatOllama(base_url=base_url, model=model, temperature=0)
-# embeddings = OllamaEmbeddings(base_url=base_url, model=model)
-
 import copy
 
 class dotdict(dict):
