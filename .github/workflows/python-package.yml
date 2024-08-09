@@ -34,8 +34,12 @@ jobs:
         python setup.py sdist bdist_wheel
 
     - name: Publish package
-      if: github.ref == 'refs/heads/main' && secrets.PYPI_API_TOKEN
+      if: github.ref == 'refs/heads/main'
       run: |
+        if [ -z "${{ secrets.PYPI_API_TOKEN }}" ]; then
+          echo "PYPI_API_TOKEN is not set. Skipping package upload."
+          exit 1
+        fi
         twine upload dist/*
       env:
         TWINE_USERNAME: __token__
