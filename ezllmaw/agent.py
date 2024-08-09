@@ -1,6 +1,6 @@
 from pydantic import Field, BaseModel
 from functools import partial
-from ezllmaw.utils import llm
+# from ezllmaw.utils import llm
 from ezllmaw.parser import PydanticLLMJsonParser
 import ezllmaw as ez
 

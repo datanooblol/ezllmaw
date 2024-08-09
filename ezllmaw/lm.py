@@ -47,4 +47,10 @@ class OllamaLLM(BaseModel):
             raise ValueError("Other type of models are not implmented yet.")
         response = requests.post(url=url, headers=headers, json=payload)
         response = response.json()
-        return response["response"]
+        
+        if self.type=="gen":
+            return response["response"] 
+        elif self.type=="embeddings":
+            return response["embeddings"]
+        else:
+            raise ValueError("Other type of models are not implmented yet.")
