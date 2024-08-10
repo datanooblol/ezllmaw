@@ -18,7 +18,7 @@ class OllamaLLM(BaseModel):
     Ref5: http://localhost:11434/api/embed
     """
     base_url:str = Field(default="http://localhost:11434", description="end point")
-    model:str = Field(default="llama3", description="model name")
+    model:str = Field(default="llama3.1", description="model name")
     stream:bool = Field(default=False)
     temperature:float = Field(default=0)
     type:str = Field(default="gen", description="gen, chat, embeddings")
