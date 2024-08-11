@@ -76,9 +76,3 @@ class Agent(BaseModel):
                 output = getattr(self, k)
         json_format = PydanticLLMJsonParser()(output)
         return pydantic_obj(**json_format)
-
-class Program:
-    def __call__(self, state):
-        return self.forward(state)
-    def forward(self, state):
-        pass
