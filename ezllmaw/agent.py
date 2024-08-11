@@ -1,4 +1,4 @@
-from pydantic import Field, BaseModel
+from pydantic import Field, BaseModel, root_validator, model_validator
 from functools import partial
 from ezllmaw.parser import PydanticLLMJsonParser
 import ezllmaw as ez
@@ -9,12 +9,24 @@ def _Field(desc=None, prefix="", field_type="", require=True, default="", format
     json_schema_extra["prefix"] = prefix
     json_schema_extra["format"] = format
     json_schema_extra["format_instructions"] = format_instructions
-    return Field(required=require, description=desc,json_schema_extra=json_schema_extra, default=default)
+    if field_type=="input":
+        return Field(..., required=require, description=desc,json_schema_extra=json_schema_extra)
+    else:
+        return Field(required=require, description=desc,json_schema_extra=json_schema_extra, default=default)
 
 InputField = partial(_Field, field_type="input")
 OutputField = partial(_Field, field_type="output", require=True)
 
 class Agent(BaseModel):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        object.__setattr__(self, 'input_prompt', self.as_prompt)
+        self.initialize()
+
+    def initialize(self):
+        # Custom initialization logic
+        return self()
     
     def __call__(self, **kwargs):
         self.update_attributes(**kwargs)
@@ -25,6 +37,10 @@ class Agent(BaseModel):
             if hasattr(self, key):
                 setattr(self, key, value)
 
+    @property
+    def output_prompt(self):
+        return self.as_prompt
+    
     @property
     def as_prompt(self):
         prompt = f"""{self.__doc__.strip().replace("    ", "")}\n\n"""
@@ -67,7 +83,15 @@ class Agent(BaseModel):
         self._set_output(response)
         return self
 
-    def as_pydantic(self, pydantic_obj):
+    @property
+    def pydantic_obj(self):
+        return None
+
+    def as_pydantic(self, pydantic_obj=None):
+        if pydantic_obj is None:
+            pydantic_obj = self.pydantic_obj
+            if pydantic_obj is None:
+                raise ValueError("pydantic_obj was missing. Initiate it with .as_pydantic(pydantic_obj=<your-pydantic-clas>) or create method pydantic_obj inside the agent.")
         model_fields = self.model_fields
         model_dict = self.model_dump()
         for k, v in model_dict.items():
