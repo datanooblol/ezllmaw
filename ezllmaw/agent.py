@@ -54,7 +54,8 @@ class Agent(BaseModel):
                 if json_schema_extra["field_type"] == "input":
                     prompt += "Extract a JSON schema:\n\n```json\n"
                 if json_schema_extra["field_type"] == "output":
-                    prompt += "Return a JSON in the following code block format:\n\n```json\n"
+                    prompt += f"Always return the {k} as a JSON in the following code block format:\n\n```json\n"
+                    # prompt += "Return a JSON in the following code block format:\n\n```json\n"
                 prompt += f"""{json_schema_extra["format_instructions"]}"""
                 prompt += "\n```\n"
             
