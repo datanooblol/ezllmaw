@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='ezllmaw',
-    version='0.0.08',
+    version='0.0.09',
     packages=find_packages(),
     install_requires=[],
     description='Easy LLM-Agentic Workflow',

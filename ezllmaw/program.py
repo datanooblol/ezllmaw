@@ -1,5 +1,5 @@
 class Program:
-    def __call__(self, state):
-        return self.forward(state)
-    def forward(self, state):
+    def __call__(self, **kwargs):
+        return self.forward(**kwargs)
+    def forward(self, **kwargs):
         pass
