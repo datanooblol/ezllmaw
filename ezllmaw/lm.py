@@ -80,5 +80,7 @@ class OllamaLLM(BaseModel):
             return response["response"] 
         elif self.type=="embeddings":
             return response["embeddings"]
+        elif self.type=="chat":
+            return response["message"]
         else:
             raise ValueError("Other type of models are not implmented yet.")
