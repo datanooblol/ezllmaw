@@ -5,6 +5,39 @@ headers={
     "Content-Type": "application/json",
     }
 
+def pack_gen(url, payload, request):
+    payload.update({"prompt": request})
+    url = f"{url}/api/generate"
+    return url, payload
+
+def pack_em(url, payload, request):
+    payload.update({"input": request})
+    url = f"{url}/api/embed"
+    return url, payload
+
+def pack_chat(url, payload, request):
+    """\
+    "messages": [
+        {
+            "role": "user",
+            "content": "why is the sky blue?"
+        },
+        {
+            "role": "assistant",
+            "content": "due to rayleigh scattering."
+        },
+        {
+            "role": "user",
+            "content": "how is that different than mie scattering?"
+        }
+    ]
+    """
+    payload.update({"messages": request})
+    url = f"{url}/api/chat"
+    return url, payload
+
+
+
 class OllamaLLM(BaseModel):
     """
     Ref1: https://dev.to/jayantaadhikary/using-the-ollama-api-to-run-llms-and-generate-responses-locally-18b7
@@ -12,10 +45,6 @@ class OllamaLLM(BaseModel):
     Ref2: https://medium.com/@shmilysyg/setup-rest-api-service-of-ai-by-using-local-llms-with-ollama-eb4b62c13b71
 
     Ref3: https://github.com/ollama/ollama/blob/main/docs/api.md
-
-    Ref4: http://localhost:11434/api/generate
-    
-    Ref5: http://localhost:11434/api/embed
     """
     base_url:str = Field(default="http://localhost:11434", description="end point")
     model:str = Field(default="llama3.1", description="model name")
@@ -34,16 +63,13 @@ class OllamaLLM(BaseModel):
                 "temperature": self.temperature
             },
         }
+        url = self.base_url
         if self.type=="gen":
-            payload.update({"prompt": request})
-        if self.type=="embeddings":
-            # request can be a string or list of string.
-            payload.update({"input": request})
-        
-        if self.type=="gen":
-            url = f"{self.base_url}/api/generate"
+            url, payload= pack_gen(url=url, payload=payload, request=request)
         elif self.type=="embeddings":
-            url = f"{self.base_url}/api/embed"
+            url, payload= pack_em(url=url, payload=payload, request=request)
+        elif self.type=="chat":
+            url, payload= pack_chat(url=url, payload=payload, request=request)
         else:
             raise ValueError("Other type of models are not implmented yet.")
         

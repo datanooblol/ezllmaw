@@ -1,6 +1,8 @@
 import json
 
-class PydanticLLMJsonParser:
+# parser still broken for some answer find the way to debug it later.
+
+class JsonParser:
     def __init__(self,):
         pass
     def __call__(self, text):
@@ -32,11 +34,13 @@ class PydanticLLMJsonParser:
         except:
             pass
         return text
+    
     def _cleaning_logic(self, text):
         text = text.split("```json")[-1].split("```")[0]
         text = text.lstrip("\n").rstrip("\n")
         text = text.replace('""', '"')
         return text
+    
     def forward(self, text):
         text = self._cleaning_logic(text)
         try:

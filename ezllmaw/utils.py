@@ -1,7 +1,8 @@
 import copy
 
+# This class comes from DSPY: https://github.com/stanfordnlp/dspy/blob/main/dsp/utils/utils.py
+
 class dotdict(dict):
-    """This class is from: https://github.com/stanfordnlp/dspy/blob/main/dsp/utils/utils.py"""
     def __getattr__(self, key):
         if key.startswith('__') and key.endswith('__'):
             return super().__getattr__(key)
@@ -29,6 +30,7 @@ class dotdict(dict):
 import threading
 from contextlib import contextmanager
 
+# This class comes from DSPY: https://github.com/stanfordnlp/dspy/blob/main/dsp/utils/settings.py
 class Settings:
     """DSP configuration settings."""
 

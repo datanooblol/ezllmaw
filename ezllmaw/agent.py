@@ -1,6 +1,6 @@
 from pydantic import Field, BaseModel, root_validator, model_validator
 from functools import partial
-from ezllmaw.parser import PydanticLLMJsonParser
+# from ezllmaw.parser import JsonParser
 import ezllmaw as ez
 
 def _Field(desc=None, prefix="", field_type="", require=True, default="", format_instructions=None, format=None):
@@ -54,8 +54,8 @@ class Agent(BaseModel):
                 if json_schema_extra["field_type"] == "input":
                     prompt += "Extract a JSON schema:\n\n```json\n"
                 if json_schema_extra["field_type"] == "output":
-                    prompt += f"Always return the {k} as a JSON in the following code block format:\n\n```json\n"
-                    # prompt += "Return a JSON in the following code block format:\n\n```json\n"
+                    prompt += "Format Instruction: "
+                    prompt += f"IMPORTANT!! Always return the {k} as a JSON in the following code block format:\n\n```json\n"
                 prompt += f"""{json_schema_extra["format_instructions"]}"""
                 prompt += "\n```\n"
             
@@ -74,7 +74,6 @@ class Agent(BaseModel):
     def log(self, **kwargs):
         pass
 
-    # @property
     def forward(self, **kwargs):
         self.log(**kwargs)
         try:
@@ -99,5 +98,5 @@ class Agent(BaseModel):
             json_schema_extra = model_fields[k].json_schema_extra
             if json_schema_extra["field_type"] == "output":
                 output = getattr(self, k)
-        json_format = PydanticLLMJsonParser()(output)
+        json_format = ez.JsonParser()(output)
         return pydantic_obj(**json_format)
