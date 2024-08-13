@@ -5,9 +5,12 @@ headers={
     "Content-Type": "application/json",
     }
 
-def pack_gen(url, payload, request):
+def pack_gen(url, payload, request, endpoint="ollama"):
     payload.update({"prompt": request})
-    url = f"{url}/api/generate"
+    if endpoint=="ollama":
+        url = f"{url}/api/generate"
+    if endpoint=="groq":
+        ...
     return url, payload
 
 def pack_em(url, payload, request):
@@ -15,7 +18,7 @@ def pack_em(url, payload, request):
     url = f"{url}/api/embed"
     return url, payload
 
-def pack_chat(url, payload, request):
+def pack_chat(url, payload, request, endpoint="ollama"):
     """\
     "messages": [
         {
@@ -33,7 +36,10 @@ def pack_chat(url, payload, request):
     ]
     """
     payload.update({"messages": request})
-    url = f"{url}/api/chat"
+    if endpoint=="ollama":
+        url = f"{url}/api/chat"
+    if endpoint=="groq":
+        url = f"{url}/chat/completions"
     return url, payload
 
 
@@ -46,11 +52,12 @@ class OllamaLLM(BaseModel):
 
     Ref3: https://github.com/ollama/ollama/blob/main/docs/api.md
     """
-    base_url:str = Field(default="http://localhost:11434", description="end point")
+    base_url:str = Field(default="http://localhost:11434", description="api url")
     model:str = Field(default="llama3.1", description="model name")
     stream:bool = Field(default=False)
     temperature:float = Field(default=0)
     type:str = Field(default="gen", description="gen, chat, embeddings")
+    end_point:str = Field(default="groq", description="api endpoint")
 
     def __call__(self, request):
         return self.forward(request)
@@ -82,5 +89,39 @@ class OllamaLLM(BaseModel):
             return response["embeddings"]
         elif self.type=="chat":
             return response["message"]
+        else:
+            raise ValueError("Other type of models are not implmented yet.")
+        
+class GroqLLM(BaseModel):
+    base_url:str = Field(default="https://api.groq.com/openai/v1", description="api url")
+    model:str = Field(default="llama-3.1-8b-instant", description="model name")
+    stream:bool = Field(default=False)
+    temperature:float = Field(default=0)
+    type:str = Field(default="chat", description="chat")
+    end_point:str = Field(default="groq", description="API endpoint")
+    api_key:str = Field(..., description="api key")
+
+    def __call__(self, request):
+        return self.forward(request)
+    
+    def forward(self, request):
+        headers.update({"Authorization": f"Bearer {self.api_key}"})
+        payload = {
+            "model": self.model,
+            "stream": self.stream,
+            "temperature": self.temperature,
+        }
+        url = self.base_url
+        if self.type=="chat":
+            url, payload= pack_chat(url=url, payload=payload, request=request, endpoint=self.end_point)
+        else:
+            raise ValueError("Other type of models are not implmented yet.")
+        
+        response = requests.post(url=url, headers=headers, json=payload)
+        response = response.json()
+        
+
+        if self.type=="chat":
+            return response["choices"][0]["message"]
         else:
             raise ValueError("Other type of models are not implmented yet.")
