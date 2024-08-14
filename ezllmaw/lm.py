@@ -123,6 +123,10 @@ class GroqLLM(BaseModel):
         
 
         if self.type=="chat":
-            return response
+            try:
+                message =  response["choices"][0]["message"]
+                return message
+            except:
+                raise ValueError(response)
         else:
             raise ValueError("Other type of models are not implmented yet.")
