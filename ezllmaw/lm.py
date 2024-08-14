@@ -57,7 +57,7 @@ class OllamaLLM(BaseModel):
     stream:bool = Field(default=False)
     temperature:float = Field(default=0)
     type:str = Field(default="gen", description="gen, chat, embeddings")
-    end_point:str = Field(default="groq", description="api endpoint")
+    end_point:str = Field(default="ollama", description="api endpoint")
 
     def __call__(self, request):
         return self.forward(request)
