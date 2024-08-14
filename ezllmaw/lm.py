@@ -119,9 +119,10 @@ class GroqLLM(BaseModel):
         
         response = requests.post(url=url, headers=headers, json=payload)
         response = response.json()
+        # print(response)
         
 
         if self.type=="chat":
-            return response["choices"][0]["message"]
+            return response
         else:
             raise ValueError("Other type of models are not implmented yet.")
