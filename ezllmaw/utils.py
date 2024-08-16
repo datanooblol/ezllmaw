@@ -69,7 +69,8 @@ class Settings:
                 suggest_failures=0,
                 langchain_history=[],
                 experimental=False,
-                backoff_time = 10
+                backoff_time=10,
+                debut=True,
             )
             cls._instance.__append(config)
 
@@ -126,7 +127,6 @@ class Settings:
 
     def __repr__(self) -> str:
         return repr(self.config)
-
 
 settings = Settings()
 configure = settings.configure
