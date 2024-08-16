@@ -70,7 +70,7 @@ class Settings:
                 langchain_history=[],
                 experimental=False,
                 backoff_time=10,
-                debut=True,
+                debug=True,
             )
             cls._instance.__append(config)
 
