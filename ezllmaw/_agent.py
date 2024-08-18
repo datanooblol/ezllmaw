@@ -1,9 +1,9 @@
 from pydantic import Field, BaseModel, root_validator, model_validator
-from typing import Optional
 from functools import partial
+# from ezllmaw.parser import JsonParser
 import ezllmaw as ez
 
-def _Field(desc=None, prefix="", field_type="", require=True, default="", format_instructions=None, format=None, pydantic_obj=None):
+def _Field(desc=None, prefix="", field_type="", require=True, default="", format_instructions=None, format=None):
     json_schema_extra = {}
     json_schema_extra["field_type"] = field_type
     json_schema_extra["prefix"] = prefix
@@ -15,10 +15,10 @@ def _Field(desc=None, prefix="", field_type="", require=True, default="", format
         return Field(required=require, description=desc,json_schema_extra=json_schema_extra, default=default)
 
 InputField = partial(_Field, field_type="input")
-OutputField = partial(_Field, field_type="output")
+OutputField = partial(_Field, field_type="output", require=True)
 
 class Agent(BaseModel):
-    
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         object.__setattr__(self, 'input_prompt', self.as_prompt)
@@ -48,16 +48,17 @@ class Agent(BaseModel):
         model_dict = self.model_dump()
         for k, v in model_dict.items():
             json_schema_extra = model_fields[k].json_schema_extra
-            if json_schema_extra["field_type"] == "output":
-                pydantic_obj = self.get_pydantic_obj
-                if pydantic_obj is not None:
+            is_fmt_json = json_schema_extra["format"] == "json"
+            is_fmt_instruction = json_schema_extra["format_instructions"] is not None
+            if is_fmt_instruction & is_fmt_json:
+                if json_schema_extra["field_type"] == "input":
+                    prompt += "Extract a JSON schema:\n\n```json\n"
+                if json_schema_extra["field_type"] == "output":
                     prompt += "Format Instruction: "
-                    # prompt += f"IMPORTANT!!"
-                    prompt += f"This is the most important for the user becuase the user will use this data format in the work. "
-                    prompt += f"Strictly return the {k} as JSON format with only the following field:\n\n```json\n"
-                    prompt += f"""{pydantic_obj().model_dump_json()}"""
-                    prompt += f"\n```\n"
-        
+                    prompt += f"IMPORTANT!! Always return the {k} as a JSON in the following code block format:\n\n```json\n"
+                prompt += f"""{json_schema_extra["format_instructions"]}"""
+                prompt += "\n```\n"
+            
             prompt += f"""{k}: \n\n{v}\n\n"""
         return prompt
     
@@ -83,21 +84,12 @@ class Agent(BaseModel):
         return self
 
     @property
-    def get_pydantic_obj(self):
-        pydantic_obj = None
-        model_fields = self.model_fields
-        model_dict = self.model_dump()
-        for k, v in model_dict.items():
-            json_schema_extra = model_fields[k].json_schema_extra
-            if json_schema_extra["field_type"] == "output":
-                format_instructions = json_schema_extra["format_instructions"]
-                if issubclass(format_instructions, BaseModel):
-                    pydantic_obj = format_instructions
-        return pydantic_obj
+    def pydantic_obj(self):
+        return None
 
     def as_pydantic(self, pydantic_obj=None):
         if pydantic_obj is None:
-            pydantic_obj = self.get_pydantic_obj
+            pydantic_obj = self.pydantic_obj
             if pydantic_obj is None:
                 raise ValueError("pydantic_obj was missing. Initiate it with .as_pydantic(pydantic_obj=<your-pydantic-clas>) or create method pydantic_obj inside the agent.")
         model_fields = self.model_fields

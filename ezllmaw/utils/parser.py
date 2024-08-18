@@ -13,7 +13,7 @@ class JsonParser:
         try:
             text = text+"{" if not text.startswith("{") else text
             text = text+"}" if not text.endswith("}") else text
-            text = json.loads(text)
+            text = json.loads(text, strict=False)
         except:
             pass
         return text
@@ -21,7 +21,7 @@ class JsonParser:
     def _add_double_quotes_in_property(self, text):
         """[{'abc':"def"}] or [{abc:"def"}]"""
         try:
-            text = json.loads(text.replace("'", '"'))
+            text = json.loads(text.replace("'", '"'), strict=False)
         except:
             pass
         return text
@@ -44,7 +44,7 @@ class JsonParser:
     def forward(self, text):
         text = self._cleaning_logic(text)
         try:
-            text = json.loads(text)
+            text = json.loads(text, strict=False)
         except json.JSONDecodeError as e:
             if "Expecting ',' delimiter" in str(e):
                 print("WARNING!", e)
