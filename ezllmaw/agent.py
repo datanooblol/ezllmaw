@@ -49,14 +49,17 @@ class Agent(BaseModel):
         for k, v in model_dict.items():
             json_schema_extra = model_fields[k].json_schema_extra
             if json_schema_extra["field_type"] == "output":
-                pydantic_obj = self.get_pydantic_obj
-                if pydantic_obj is not None:
-                    prompt += "Format Instruction: "
-                    # prompt += f"IMPORTANT!!"
-                    prompt += f"This is the most important for the user becuase the user will use this data format in the work. "
-                    prompt += f"Strictly return the {k} as JSON format with only the following field:\n\n```json\n"
-                    prompt += f"""{pydantic_obj().model_dump_json()}"""
-                    prompt += f"\n```\n"
+                if json_schema_extra["format_instructions"] is not None:
+                    pydantic_obj = self.get_pydantic_obj
+                    if pydantic_obj is not None:
+                        prompt += "Format Instruction: "
+                        # prompt += f"IMPORTANT!!"
+                        prompt += f"This is the most important for the user becuase the user will use this data format in the work. "
+                        prompt += f"Strictly return the {k} as JSON format with only the following field:\n\n```json\n"
+                        prompt += f"""{pydantic_obj().model_dump_json()}"""
+                        prompt += f"\n```\n"
+                    else:
+                        pass
         
             prompt += f"""{k}: \n\n{v}\n\n"""
         return prompt
