@@ -14,7 +14,7 @@ def pack_request(url, payload, request, headers):
     }
     
 class ReRanker(BaseLM):
-     
+    top_n:int = 3
     def __call__(self, query:str, docs:List[str]):
         return self.forward(query, docs)
     
@@ -37,7 +37,7 @@ class ReRanker(BaseLM):
             z = np.array(z)
         return 1/(1 + np.exp(-z))
     
-    def cutoff(self, docs:List[str], score:List[float], top_n=int):
+    def cutoff(self, docs:List[str], score:List[float]):
         docs_score = list(zip(docs, score))
         docs_score.sort(key=lambda x: x[1], reverse=True)
-        return docs_score[:top_n]
+        return docs_score[:self.top_n]
